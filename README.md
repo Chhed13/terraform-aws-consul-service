@@ -4,7 +4,8 @@
 ## Features
 
 - [x] Guarantee supported 1.0.x version
-- [ ] Support 1.4.x version
+- [ ] Support Consul 1.4.x version
+- [ ] Support TF 0.12.x version
 - [x] Deploy standalone or 3 node cluster
 - [x] Make initial setup of ACL on apply
 - [x] Deployed in ASG and may be rotated accordingly
@@ -29,12 +30,13 @@
 | consul_domain          | string |  "consul"   | Consul domain name                                          |
 | consul_env_tag         | string |             | consul_env tag value on instance. Can be same as env_name   |
 | consul_recursors       |  list  | ["8.8.8.8"] | List of recursors (extentions) for DNS resolving            |
+| base_search_ami        | string | "amzn2-ami-hvm-*-x86_64-gp2" | AMI to search. Allow to pin fixed version. By default: upstream to latest Amazon Linux 2 iamge |
 | standalone             |  bool  |    true     | true - up 1 node consul, false - up 3 node consul           |
 | instance_size          | string |             | Size of cluster, can be t_micro, t_small, t_medium, c_large |
 | subnet_ids             |  list  |             | IDs of subnet in different availability zones               |
 | iam_policies           |  list  |             | ARNs of IAM policies to attach. At least Describe Instances and Manage Network Interface must be provided |
 | key_name               | string |             | SSH key name in your AWS account for AWS instances          |
-| private_key            | string |             | Private key to specified by key_name                        |
+| private_key            | string |             | Private key to specified by key_name. Required only to set acl procedure |
 | env_name               | string |    ""       | Envrironment tag on instance and prefix letter in name      |
 | use_dhcp_options       | bool   |   false     | Set Consul as primary DHCP & DNS resolver. Can be switched only after initial deployment |
 | dhcp_domain_name       | string |    ""       | Domain name to set in DHCP options                          |
