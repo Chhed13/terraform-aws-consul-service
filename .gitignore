@@ -1,19 +1,11 @@
 .idea/
-*.sublime-project
-*.sublime-workspace
 
-#vagrant stuff
-.vagrant/
-.vagrant.d/
-.kitchen/
-cookbooks/
-.terraform/
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
 *.tfstate
-*.tfstate.backup
-_test_*
+*.tfstate.*
 
-**/bin/
-**/obj/
-*.suo
-**/packages/
-*.csproj.user
+# .tfvars files
+*.tfvars

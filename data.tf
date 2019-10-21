@@ -17,7 +17,7 @@ data "aws_ami" "image" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-2.0.20180622.1-x86_64-gp2"] //pin fixed version
+    values = ["${var.base_search_ami}"]
   }
 }
 

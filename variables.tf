@@ -39,6 +39,11 @@ variable "consul_recursors" {
 }
 
 // AWS Auto-scaling, placement and policy params /////////////////
+variable "base_search_ami" {
+  default = "amzn2-ami-hvm-*-x86_64-gp2"
+  description = "AMI to search. Allow to pin fixed version. By default: upstream to latest Amazon Linux 2 iamge"
+}
+
 variable "standalone" {
   default     = true
   description = "true - up 1 node consul, false - up 3 node consul"
@@ -66,7 +71,7 @@ variable "key_name" {
 
 variable "private_key" {
   type        = "string"
-  description = "Private key to specified by key_name"
+  description = "Private key to specified by key_name. Required only to set acl procedure"
 }
 
 // Environment and infra params //////////
