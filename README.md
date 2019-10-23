@@ -5,7 +5,7 @@
 
 - [x] Guarantee supported 1.0.x version
 - [ ] Support Consul 1.4.x version
-- [ ] Support TF 0.12.x version
+- [x] Support TF 0.12.x version
 - [x] Deploy standalone or 3 node cluster
 - [x] Make initial setup of ACL on apply
 - [x] Deployed in ASG and may be rotated accordingly

@@ -1,14 +1,19 @@
-data "aws_region" "current" {}
+data "aws_region" "current" {
+}
 
 locals {
   full_name     = "Consul"
-  name          = "${format("%0.1s%s",lower(var.env_name),var.short_name)}"
-  count         = "${var.standalone ? 1 : 3}"
+  name          = format("%0.1s%s", lower(var.env_name), var.short_name)
+  count         = var.standalone ? 1 : 3
   instance_type = {
     t_micro  = "t3.micro"
     t_small  = "t3.small"
     t_medium = "t3.medium"
     c_large  = "c5.large"
+  }
+  tags          = {
+    Name = "${local.name}l",
+    env  = var.env_name
   }
 }
 
@@ -17,19 +22,19 @@ data "aws_ami" "image" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["${var.base_search_ami}"]
+    values = [var.base_search_ami]
   }
 }
 
-data aws_subnet sn {
-  id = "${var.subnet_ids[0]}"
+data "aws_subnet" "sn" {
+  id = var.subnet_ids[0]
 }
 
 //random_id.encrypt_key.b64_std
 resource "random_id" "encrypt_key" {
   byte_length = 16
   lifecycle {
-    ignore_changes = ["*"]
+    ignore_changes = all
   }
 }
 
@@ -40,30 +45,31 @@ resource "random_id" "token" {
   count       = 3
   byte_length = 16
   lifecycle {
-    ignore_changes = ["*"]
+    ignore_changes = all
   }
-  keepers {
-
-  }
+  keepers     = {}
 }
+
 data "template_file" "token" {
   count    = 3
-  template = "${format("%v-%v-%v-%v-%v",
-              substr(random_id.token.*.hex[count.index],0,8),
-              substr(random_id.token.*.hex[count.index],8,4),
-              substr(random_id.token.*.hex[count.index],12,4),
-              substr(random_id.token.*.hex[count.index],16,4),
-              substr(random_id.token.*.hex[count.index],20,12))}"
+  template = format(
+  "%v-%v-%v-%v-%v",
+  substr(random_id.token[count.index].hex, 0, 8),
+  substr(random_id.token[count.index].hex, 8, 4),
+  substr(random_id.token[count.index].hex, 12, 4),
+  substr(random_id.token[count.index].hex, 16, 4),
+  substr(random_id.token[count.index].hex, 20, 12),
+  )
 }
 
 data "aws_subnet" "subnet" {
-  id = "${var.subnet_ids[0]}"
+  id = var.subnet_ids[0]
 }
 
 locals {
   consul = <<-EOF
     {
-      "recursors": ["${join(" \",\" ",var.consul_recursors)}"],
+      "recursors": ["${join(" \",\" ", var.consul_recursors)}"],
       "datacenter": "${var.consul_datacenter}",
       "acl_datacenter": "${var.consul_datacenter}",
       "domain": "${var.consul_domain}",
@@ -77,32 +83,33 @@ locals {
       "verify_incoming": false,
       "verify_outgoing": false,
       "ui": true,
-      ${var.use_acl ? "\"acl_token\": \"${data.template_file.token.*.rendered[1]}\"," : "" }
-      ${var.use_acl ? "\"acl_master_token\": \"${data.template_file.token.*.rendered[0]}\"," : "" }
+      ${var.use_acl ? "\"acl_token\": \"${data.template_file.token[1].rendered}\"," : ""}
+      ${var.use_acl ? "\"acl_master_token\": \"${data.template_file.token[0].rendered}\"," : ""}
       "client_addr": "0.0.0.0"
     }
-    EOF
+EOF
+
 }
 
-
 data "template_file" "userdata" {
-  template = "${file("${path.module}/userdata.tpl")}"
-  vars {
+  template = file("${path.module}/userdata.tpl")
+  vars     = {
     hostname = "${local.name}l"
-    eni      = "${join(" ",aws_network_interface.eni_ip.*.id)}"
-    version  = "${var.consul_version}"
-    consul   = "${base64encode(local.consul)}"
-    region   = "${data.aws_region.current.name}"
-    nrinfra  = "${base64encode("license_key: ${var.newrelic_key}")}"
+    eni      = join(" ", aws_network_interface.eni_ip.*.id)
+    version  = var.consul_version
+    consul   = base64encode(local.consul)
+    region   = data.aws_region.current.name
+    nrinfra  = base64encode("license_key: ${var.newrelic_key}")
   }
 }
 
 data "template_file" "set_acls" {
-  template = "${file("${path.module}/set_acls.sh")}"
-  vars {
+  template = file("${path.module}/set_acls.sh")
+  vars     = {
     host   = "localhost:8500"
-    master = "${data.template_file.token.*.rendered[0]}"
-    agent  = "${data.template_file.token.*.rendered[1]}"
-    admin  = "${data.template_file.token.*.rendered[2]}"
+    master = data.template_file.token[0].rendered
+    agent  = data.template_file.token[1].rendered
+    admin  = data.template_file.token[2].rendered
   }
 }
+
