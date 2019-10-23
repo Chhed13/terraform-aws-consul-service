@@ -36,7 +36,7 @@
 | subnet_ids             |  list  |             | IDs of subnet in different availability zones               |
 | iam_policies           |  list  |             | ARNs of IAM policies to attach. At least Describe Instances and Manage Network Interface must be provided |
 | key_name               | string |             | SSH key name in your AWS account for AWS instances          |
-| private_key            | string |             | Private key to specified by key_name. Required only to set acl procedure |
+| private_key            | string |    ""       | Private key to specified by key_name. Required only to set acl procedure |
 | env_name               | string |    ""       | Envrironment tag on instance and prefix letter in name      |
 | use_dhcp_options       | bool   |   false     | Set Consul as primary DHCP & DNS resolver. Can be switched only after initial deployment |
 | dhcp_domain_name       | string |    ""       | Domain name to set in DHCP options                          |

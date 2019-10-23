@@ -71,6 +71,7 @@ variable "key_name" {
 
 variable "private_key" {
   type        = string
+  default     = ""
   description = "Private key to specified by key_name. Required only to set acl procedure"
 }
 
