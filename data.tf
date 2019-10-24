@@ -67,14 +67,15 @@ data "aws_subnet" "subnet" {
 }
 
 locals {
-  consul = <<-EOF
+  consul_join = "\"provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}\""
+  consul_config = <<-EOF
     {
       "recursors": ["${join(" \",\" ", var.consul_recursors)}"],
       "datacenter": "${var.consul_datacenter}",
       "acl_datacenter": "${var.consul_datacenter}",
       "domain": "${var.consul_domain}",
       "encrypt": "${random_id.encrypt_key.b64_std}",
-      "retry_join": [ "provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}" ],
+      "retry_join": [ ${local.consul_join} ],
       "bootstrap_expect": ${local.count},
       "server": true,
       "disable_remote_exec": true,
@@ -97,7 +98,7 @@ data "template_file" "userdata" {
     hostname = "${local.name}l"
     eni      = join(" ", aws_network_interface.eni_ip.*.id)
     version  = var.consul_version
-    consul   = base64encode(local.consul)
+    consul   = base64encode(local.consul_config)
     region   = data.aws_region.current.name
     nrinfra  = base64encode("license_key: ${var.newrelic_key}")
   }

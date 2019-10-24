@@ -36,3 +36,6 @@ output "dns_resolver_ips" {
   value = aws_network_interface.eni_ip.*.private_ip
 }
 
+output "consul_join" {
+  value = local.consul_join
+}
