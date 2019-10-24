@@ -55,7 +55,7 @@
 | asg_id               | string | ASG id                   |
 | launch_config_id     | string | Launch configuration id  |
 | dns_resolver_ips     | list   | IPs of DNS resolvers     |
-| consul_join          | string | Consul join string       |
+| consul_join          | list   | Consul join list(string) |
 
 
 ## Usage

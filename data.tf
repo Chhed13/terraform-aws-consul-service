@@ -67,7 +67,7 @@ data "aws_subnet" "subnet" {
 }
 
 locals {
-  consul_join = "\"provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}\""
+  consul_join = "provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"
   consul_config = <<-EOF
     {
       "recursors": ["${join(" \",\" ", var.consul_recursors)}"],
@@ -75,7 +75,7 @@ locals {
       "acl_datacenter": "${var.consul_datacenter}",
       "domain": "${var.consul_domain}",
       "encrypt": "${random_id.encrypt_key.b64_std}",
-      "retry_join": [ ${local.consul_join} ],
+      "retry_join": [ "${local.consul_join}" ],
       "bootstrap_expect": ${local.count},
       "server": true,
       "disable_remote_exec": true,
