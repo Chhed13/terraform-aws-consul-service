@@ -21,7 +21,7 @@ packages:
 package_upgrade: true
 
 write_files:
-  - path: /etc/consul/consul.json
+  - path: /etc/consul/consul.hcl
     permissions: '0644'
     encoding: base64
     content: |
@@ -40,6 +40,6 @@ runcmd:
   - systemctl enable docker
   - systemctl restart docker
   - docker pull consul:${version}
-  - docker run --net=host -d -e 'CONSUL_ALLOW_PRIVILEGED_PORTS=' --restart=unless-stopped -v /opt/consul:/consul/data -v /var/run/docker.sock:/var/run/docker.sock -v /etc/consul:/etc/consul --name consul-server consul:${version} agent -advertise=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) -dns-port=53 -config-file=/etc/consul/consul.json
+  - docker run --net=host -d -e 'CONSUL_ALLOW_PRIVILEGED_PORTS=' --restart=unless-stopped -v /opt/consul:/consul/data -v /var/run/docker.sock:/var/run/docker.sock -v /etc/consul:/etc/consul --name consul-server consul:${version} agent -advertise=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) -dns-port=53 -config-file=/etc/consul/consul.hcl
 
 output : { all : '| tee -a /var/log/cloud-init-output.log' }

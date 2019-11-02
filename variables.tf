@@ -12,7 +12,7 @@ variable "use_acl" {
 
 variable "consul_version" {
   type        = string
-  default     = "1.0.7"
+  default     = "1.4.5"
   description = "Version of Consul service to run."
 }
 

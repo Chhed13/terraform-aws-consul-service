@@ -67,29 +67,32 @@ data "aws_subnet" "subnet" {
 }
 
 locals {
-  consul_join = "provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"
+  consul_join   = ["provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"]
   consul_config = <<-EOF
-    {
-      "recursors": ["${join(" \",\" ", var.consul_recursors)}"],
-      "datacenter": "${var.consul_datacenter}",
-      "acl_datacenter": "${var.consul_datacenter}",
-      "domain": "${var.consul_domain}",
-      "encrypt": "${random_id.encrypt_key.b64_std}",
-      "retry_join": [ "${local.consul_join}" ],
-      "bootstrap_expect": ${local.count},
-      "server": true,
-      "disable_remote_exec": true,
-      "acl_down_policy": "deny",
-      "acl_default_policy": "deny",
-      "verify_incoming": false,
-      "verify_outgoing": false,
-      "ui": true,
-      ${var.use_acl ? "\"acl_token\": \"${data.template_file.token[1].rendered}\"," : ""}
-      ${var.use_acl ? "\"acl_master_token\": \"${data.template_file.token[0].rendered}\"," : ""}
-      "client_addr": "0.0.0.0"
+  recursors           = ${jsonencode(var.consul_recursors)}
+  datacenter          = "${var.consul_datacenter}"
+  domain              = "${var.consul_domain}"
+  encrypt             = "${random_id.encrypt_key.b64_std}"
+  retry_join          = ${jsonencode(local.consul_join)}
+  bootstrap_expect    = ${local.count}
+  server              = true
+  disable_remote_exec = true
+  verify_incoming     = false
+  verify_outgoing     = false
+  ui                  = true
+  %{ if var.use_acl }
+  acl = {
+    enabled        = true
+    down_policy    = "extend-cache"
+    default_policy = "deny"
+    tokens         = {
+      master       = "${data.template_file.token[0].rendered}"
+      default      = "${data.template_file.token[1].rendered}"
     }
-EOF
-
+  }
+  %{ endif }
+  client_addr         = "0.0.0.0"
+  EOF
 }
 
 data "template_file" "userdata" {

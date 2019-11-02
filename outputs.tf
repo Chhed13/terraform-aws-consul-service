@@ -37,5 +37,5 @@ output "dns_resolver_ips" {
 }
 
 output "consul_join" {
-  value = [local.consul_join]
+  value = local.consul_join
 }
