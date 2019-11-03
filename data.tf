@@ -15,6 +15,32 @@ locals {
     Name = "${local.name}l",
     env  = var.env_name
   }
+  consul_join   = ["provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"]
+  consul_config = <<-EOF
+  recursors           = ${jsonencode(var.consul_recursors)}
+  datacenter          = "${var.consul_datacenter}"
+  domain              = "${var.consul_domain}"
+  encrypt             = "${random_id.encrypt_key.b64_std}"
+  retry_join          = ${jsonencode(local.consul_join)}
+  bootstrap_expect    = ${local.count}
+  server              = true
+  disable_remote_exec = true
+  verify_incoming     = false
+  verify_outgoing     = false
+  ui                  = true
+  %{ if var.use_acl }
+  acl = {
+    enabled        = true
+    down_policy    = "extend-cache"
+    default_policy = "deny"
+    tokens         = {
+      master       = "${data.template_file.token[0].rendered}"
+      default      = "${data.template_file.token[1].rendered}"
+    }
+  }
+  %{ endif }
+  client_addr         = "0.0.0.0"
+  EOF
 }
 
 data "aws_ami" "image" {
@@ -64,35 +90,6 @@ data "template_file" "token" {
 
 data "aws_subnet" "subnet" {
   id = var.subnet_ids[0]
-}
-
-locals {
-  consul_join   = ["provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"]
-  consul_config = <<-EOF
-  recursors           = ${jsonencode(var.consul_recursors)}
-  datacenter          = "${var.consul_datacenter}"
-  domain              = "${var.consul_domain}"
-  encrypt             = "${random_id.encrypt_key.b64_std}"
-  retry_join          = ${jsonencode(local.consul_join)}
-  bootstrap_expect    = ${local.count}
-  server              = true
-  disable_remote_exec = true
-  verify_incoming     = false
-  verify_outgoing     = false
-  ui                  = true
-  %{ if var.use_acl }
-  acl = {
-    enabled        = true
-    down_policy    = "extend-cache"
-    default_policy = "deny"
-    tokens         = {
-      master       = "${data.template_file.token[0].rendered}"
-      default      = "${data.template_file.token[1].rendered}"
-    }
-  }
-  %{ endif }
-  client_addr         = "0.0.0.0"
-  EOF
 }
 
 data "template_file" "userdata" {
