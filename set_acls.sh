@@ -15,6 +15,6 @@ consul acl policy create -name agent -rules 'agent_prefix "" { policy = "write" 
 consul acl policy create -name admin -rules 'agent_prefix "" { policy = "write" } event_prefix "" { policy = "write" } key_prefix "" { policy = "write" } key_prefix "HotSwapServices/" { policy = "write" } keyring = "write" node_prefix "" { policy = "write" } operator = "write" query_prefix "" { policy = "write" } service_prefix "" { policy = "write" }'
 
 echo "Creating tokens"
-consul acl token create -policy-name=agent -description="agent" -secret=${agent} -accessor=${agent}
-consul acl token create -policy-name=admin -description="admin" -secret=${admin} -accessor=${admin}
+consul acl token create -policy-name=agent -description="agent" -secret=${agent}
+consul acl token create -policy-name=admin -description="admin" -secret=${admin}
 consul acl token update -id=anonymous -policy-name=anonymous
