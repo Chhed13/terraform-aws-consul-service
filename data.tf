@@ -16,6 +16,7 @@ locals {
     env  = var.env_name
   }
   consul_join   = ["provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"]
+
   consul_config = <<-EOF
   recursors           = ${jsonencode(var.consul_recursors)}
   datacenter          = "${var.consul_datacenter}"
@@ -28,6 +29,7 @@ locals {
   verify_incoming     = false
   verify_outgoing     = false
   ui                  = true
+  leave_on_terminate  = true
   %{ if var.use_acl }
   acl = {
     enabled        = true
@@ -40,6 +42,53 @@ locals {
   }
   %{ endif }
   client_addr         = "0.0.0.0"
+  ports               = {
+    dns = 53
+  }
+  EOF
+
+  install_consul = <<-EOF
+  #!/bin/bash
+
+  NAME=consul
+  VERSION=${var.consul_version}
+  HOST_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+
+  cd /tmp
+  curl -O https://releases.hashicorp.com/$NAME/$VERSION/$NAME\_$VERSION\_linux_amd64.zip
+  unzip $NAME\_$VERSION\_linux_amd64.zip
+  chmod +x $NAME
+  mv $NAME /usr/bin/$NAME
+
+  cat << BOF > /tmp/$NAME.service
+  [Unit]
+  Description=consul
+  After=network.target
+  Wants=network.target
+  Documentation=https://consul.io/docs/
+
+  [Service]
+  User=root
+  Group=root
+  Type=simple
+  ExecStart=/usr/bin/consul agent -config-file=/etc/consul/consul.hcl -config-dir=/etc/consul/conf.d -data-dir=/var/lib/consul -advertise=$HOST_IP
+  ExecReload=/bin/kill -HUP $MAINPID
+  Restart=on-failure
+  RestartSec=10
+  WorkingDirectory=/var/lib/consul
+
+  [Install]
+  WantedBy=multi-user.target
+  BOF
+
+  chown root:root /tmp/$NAME.service
+  mv /tmp/$NAME.service /etc/systemd/system/
+
+  mkdir -p /etc/$NAME/conf.d
+  mkdir -p /var/lib/$NAME
+
+  systemctl daemon-reload
+  systemctl enable $NAME
   EOF
 }
 
@@ -97,9 +146,10 @@ data "template_file" "userdata" {
   vars     = {
     hostname = "${local.name}l"
     eni      = join(" ", aws_network_interface.eni_ip.*.id)
+    region   = data.aws_region.current.name
     version  = var.consul_version
     consul   = base64encode(local.consul_config)
-    region   = data.aws_region.current.name
+    install  = base64encode(local.install_consul)
     nrinfra  = base64encode("license_key: ${var.newrelic_key}")
   }
 }

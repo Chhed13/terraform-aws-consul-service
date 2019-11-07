@@ -54,6 +54,7 @@ resource "aws_autoscaling_group" "asg" {
   wait_for_capacity_timeout = "5m"
   termination_policies      = ["OldestInstance", "OldestLaunchConfiguration"]
   protect_from_scale_in     = true
+  force_delete              = true
   lifecycle {
     prevent_destroy = false
   }
@@ -103,7 +104,7 @@ resource "aws_vpc_dhcp_options" "opt" {
 }
 
 resource "aws_vpc_dhcp_options_association" "opta" {
-  count                = var.use_dhcp_options ? 1 : 0
+  count           = var.use_dhcp_options ? 1 : 0
   vpc_id          = data.aws_subnet.sn.vpc_id
   dhcp_options_id = aws_vpc_dhcp_options.opt[0].id
 }

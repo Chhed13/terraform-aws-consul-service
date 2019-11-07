@@ -1,10 +1,15 @@
 # Run Consul cluster on AWS
 ![Consul](https://422bf3d160f51e6f9d81-50529851d44f252cc6434d6bbf378de4.ssl.cf2.rackcdn.com/Consul_VerticalLogo_FullColor-blog-list.4d55ef4f663e9f2cbca3db491b480691.png)
 
+## Versions mapping
+
+- 0.1: Terraform 0.11, Consul >= 1.0 
+- 0.2: Terraform 0.12, Consul >= 1.0 
+- 0.3: Terraform 0.12, Consul >= 1.5 
+
 ## Features
 
-- [x] Guarantee supported 1.0.x version
-- [ ] Support Consul 1.4.x version
+- [x] Support Consul 1.5.x version
 - [x] Support TF 0.12.x version
 - [x] Deploy standalone or 3 node cluster
 - [x] Make initial setup of ACL on apply
@@ -17,6 +22,7 @@
 - [x] attach to NewRelic Infra if key provided
 - [ ] no manage IAM policies inside module now, provide externally
 - [x] based on Amazon Linux 2, no custom AMIs
+- [ ] run from non-root user with 53 port DNS support
 
 
 ## Input variables
@@ -25,7 +31,7 @@
 |------------------------|:------:|:-----------:|-------------------------------------------------------------|
 | short_name             |  bool  |   "con"     | Host middle name. Better not touch it                       |
 | use_acl                |  bool  |   true      | Setup ACLs or not. Default true                             |
-| consul_version         | string |   1.0.7     | Version of Consul service to run.                           |
+| consul_version         | string |   1.5.3     | Version of Consul service to run.                           |
 | consul_datacenter      | string |             | Consul datacenter name                                      |
 | consul_domain          | string |  "consul"   | Consul domain name                                          |
 | consul_env_tag         | string |             | consul_env tag value on instance. Can be same as env_name   |
