@@ -17,7 +17,7 @@
 - [x] Can be used as primary DNS and settled in DHCP options
 - [x] Upgrade via server rotation
 - [x] stable IPs for DNS resolving and attachment
-- [x] attach via _consul_env_ tag on instance
+- [x] attach via _consul_env_ tag on instance (AWS auto join feature)
 - [x] auto-restart in case of service failure (but never happens)
 - [x] attach to NewRelic Infra if key provided
 - [ ] no manage IAM policies inside module now, provide externally
@@ -27,27 +27,27 @@
 
 ## Input variables
 
-| Variable               |  Type  |  Default    | Description                                                 |
-|------------------------|:------:|:-----------:|-------------------------------------------------------------|
-| short_name             |  bool  |   "con"     | Host middle name. Better not touch it                       |
-| use_acl                |  bool  |   true      | Setup ACLs or not. Default true                             |
-| consul_version         | string |   1.5.3     | Version of Consul service to run.                           |
-| consul_datacenter      | string |             | Consul datacenter name                                      |
-| consul_domain          | string |  "consul"   | Consul domain name                                          |
-| consul_env_tag         | string |             | consul_env tag value on instance. Can be same as env_name   |
-| consul_recursors       |  list  | ["8.8.8.8"] | List of recursors (extentions) for DNS resolving            |
-| base_search_ami        | string | "amzn2-ami-hvm-*-x86_64-gp2" | AMI to search. Allow to pin fixed version. By default: upstream to latest Amazon Linux 2 iamge |
-| standalone             |  bool  |    true     | true - up 1 node consul, false - up 3 node consul           |
-| instance_size          | string |             | Size of cluster, can be t_micro, t_small, t_medium, c_large |
-| subnet_ids             |  list  |             | IDs of subnet in different availability zones               |
-| iam_policies           |  list  |             | ARNs of IAM policies to attach. At least Describe Instances and Manage Network Interface must be provided |
-| key_name               | string |             | SSH key name in your AWS account for AWS instances          |
-| private_key            | string |    ""       | Private key to specified by key_name. Required only to set acl procedure |
-| env_name               | string |    ""       | Envrironment tag on instance and prefix letter in name      |
-| use_dhcp_options       | bool   |   false     | Set Consul as primary DHCP & DNS resolver. Can be switched only after initial deployment |
-| dhcp_domain_name       | string |    ""       | Domain name to set in DHCP options                          |
-| dhcp_dns_servers       | list   |   [""]      | DNS servers to set in DHCP options                          |
-| newrelic_key           | string |    ""       | License key for NewRelic infrastructure. Attach in provided |
+| Variable               |  Type  |  Default                     | Description                                                                                               |
+|------------------------|:------:|:----------------------------:|-----------------------------------------------------------------------------------------------------------|
+| short_name             |  bool  |           "con"              | Host middle name. Better not touch it                                                                     |
+| use_acl                |  bool  |           true               | Setup ACLs or not. Default true                                                                           |
+| consul_version         | string |           1.5.3              | Version of Consul service to run.                                                                         |
+| consul_datacenter      | string |                              | Consul datacenter name                                                                                    |
+| consul_domain          | string |          "consul"            | Consul domain name                                                                                        |
+| consul_env_tag         | string |                              | consul_env tag value on instance. Can be same as env_name                                                 |
+| consul_recursors       |  list  |         ["8.8.8.8"]          | List of recursors (extentions) for DNS resolving                                                          |
+| base_search_ami        | string | "amzn2-ami-hvm-*-x86_64-gp2" | AMI to search. Allow to pin fixed version. By default: upstream to latest Amazon Linux 2 image            |
+| standalone             |  bool  |            true              | true - up 1 node consul, false - up 3 node consul                                                         |
+| instance_size          | string |                              | Size of cluster, can be t_micro, t_small, t_medium, c_large                                               |
+| subnet_ids             |  list  |                              | IDs of subnet in different availability zones                                                             |
+| iam_policies           |  list  |                              | ARNs of IAM policies to attach. At least Describe Instances and Manage Network Interface must be provided |
+| key_name               | string |                              | SSH key name in your AWS account for AWS instances                                                        |
+| private_key            | string |             ""               | Private key to specified by key_name. Required only to set acl procedure                                  |
+| env_name               | string |             ""               | Envrironment tag on instance and prefix letter in name                                                    |
+| use_dhcp_options       | bool   |            false             | Set Consul as primary DHCP & DNS resolver. Can be switched only after initial deployment                  |
+| dhcp_domain_name       | string |             ""               | Domain name to set in DHCP options                                                                        |
+| dhcp_dns_servers       | list   |            [""]              | DNS servers to set in DHCP options                                                                        |
+| newrelic_key           | string |             ""               | License key for NewRelic infrastructure. Attach in provided                                               |
 
 ## Output variables
 
@@ -96,8 +96,7 @@ If you plan to destroy Consul, want to switch back, Consul cluster is fail:
 __Allways check the update on test cluster first. General Consul config may become incompatible__
 
 * Change `consul_version` to new one and make apply. Nothing breaks here
-* Connect to one [Consul server via CLI](https://www.consul.io/docs/commands/index.html#consul_http_addr) with admin token and make `consul leave`
-* Then terminate that instance via AWS console or CLI
+* Terminate one instance via AWS console or CLI
 * Wait new instance to up and running via ASG policy (usually it takes 1 minute to get up, up to 5 minute to trigger policy)
 * Insure in AWS console that your instance has 2 IP assigned - rear, but happen. If it was re-scheduled too fast ENI may not re-attach
   * If not: terminate on more time

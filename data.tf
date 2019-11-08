@@ -3,7 +3,7 @@ data "aws_region" "current" {
 
 locals {
   full_name     = "Consul"
-  name          = format("%0.1s%s", lower(var.env_name), var.short_name)
+  name          = "${format("%0.1s%s", lower(var.env_name), var.short_name)}l"
   count         = var.standalone ? 1 : 3
   instance_type = {
     t_micro  = "t3.micro"
@@ -12,7 +12,7 @@ locals {
     c_large  = "c5.large"
   }
   tags          = {
-    Name = "${local.name}l",
+    Name = local.name,
     env  = var.env_name
   }
   consul_join   = ["provider=aws tag_key=consul_env tag_value=${var.consul_env_tag}"]
@@ -144,7 +144,7 @@ data "aws_subnet" "subnet" {
 data "template_file" "userdata" {
   template = file("${path.module}/userdata.tpl")
   vars     = {
-    hostname = "${local.name}l"
+    hostname = local.name
     eni      = join(" ", aws_network_interface.eni_ip.*.id)
     region   = data.aws_region.current.name
     version  = var.consul_version

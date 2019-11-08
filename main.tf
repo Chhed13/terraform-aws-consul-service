@@ -4,7 +4,7 @@ resource "aws_network_interface" "eni_ip" {
   source_dest_check = true
   security_groups   = [aws_security_group.sg.id]
   tags              = merge(local.tags, {
-    enitag = "${local.name}l"
+    enitag = local.name
   })
 }
 
@@ -29,7 +29,7 @@ resource "aws_iam_instance_profile" "profile" {
 
 /////////////////////////////////////////////////////////
 resource "aws_launch_configuration" "lc" {
-  name_prefix          = "${local.name}l-"
+  name_prefix          = "${local.name}-"
   image_id             = data.aws_ami.image.id
   instance_type        = local.instance_type[var.instance_size]
   key_name             = var.key_name
@@ -42,7 +42,7 @@ resource "aws_launch_configuration" "lc" {
 }
 
 resource "aws_autoscaling_group" "asg" {
-  name_prefix               = "${local.name}l-"
+  name_prefix               = "${local.name}-"
   vpc_zone_identifier       = var.subnet_ids
   max_size                  = local.count
   min_size                  = local.count
@@ -55,9 +55,7 @@ resource "aws_autoscaling_group" "asg" {
   termination_policies      = ["OldestInstance", "OldestLaunchConfiguration"]
   protect_from_scale_in     = true
   force_delete              = true
-  lifecycle {
-    prevent_destroy = false
-  }
+
   dynamic "tag" {
     for_each = merge(  local.tags, {
       consul_env = var.consul_env_tag
