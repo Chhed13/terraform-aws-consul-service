@@ -37,7 +37,7 @@ locals {
     default_policy = "deny"
     tokens         = {
       master       = "${data.template_file.token[0].rendered}"
-      default      = "${data.template_file.token[1].rendered}"
+      agent      = "${data.template_file.token[1].rendered}"
     }
   }
   %{ endif }
