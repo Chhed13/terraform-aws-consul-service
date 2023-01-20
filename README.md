@@ -1,4 +1,7 @@
 # Run Consul cluster on AWS
+[![Published to Terraform Module Registry](https://img.shields.io/badge/Published%20to%20Terraform%20Module%20Registry-0.3.2-blue.svg)](https://registry.terraform.io/modules/Chhed13/consul-service/aws/0.3.2) 
+![Terraform Version](https://img.shields.io/badge/Terraform-0.12-green.svg)
+
 ![Consul](https://422bf3d160f51e6f9d81-50529851d44f252cc6434d6bbf378de4.ssl.cf2.rackcdn.com/Consul_VerticalLogo_FullColor-blog-list.4d55ef4f663e9f2cbca3db491b480691.png)
 
 ## Versions mapping
